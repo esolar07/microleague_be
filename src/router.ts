@@ -1,9 +1,12 @@
 import {Router} from 'express'
-import {simluateGame} from "./controllers/generator";
+import {simulateGame} from "./controllers/generator";
 
 
 
 const router = Router()
-router.post('/generate', simluateGame)
+router.get('/home', (req, res)=> {
+    res.json({message: 'home'})
+});
+router.post('/generate', simulateGame)
 
 export default router
