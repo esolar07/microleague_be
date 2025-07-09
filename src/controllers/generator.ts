@@ -5,7 +5,6 @@ require('dotenv').config();
 const openAICLient = new OpenAI();
 
 interface GameRequestBody{
-    sport: string;
     teamOneYear: string;
     teamOneName: string;
     teamTwoYear: string;
@@ -26,7 +25,6 @@ async function generateGame(teamOneYear: string, teamOneName:string, teamTwoYear
 
 function isValidGameRequest(body: any): body is GameRequestBody {
     return (
-        typeof body.sport === 'string' &&
         typeof body.teamOneYear === 'string' &&
         typeof body.teamOneName === 'string' &&
         typeof body.teamTwoYear === 'string' &&
@@ -36,7 +34,7 @@ function isValidGameRequest(body: any): body is GameRequestBody {
 
 export const simulateGame = async (req: Request<{}, {}, GameRequestBody>, res: Response) => {
     try {
-        const {sport, teamOneYear, teamOneName, teamTwoYear, teamTwoName} = req.body;
+        const {teamOneYear, teamOneName, teamTwoYear, teamTwoName} = req.body;
         if (!isValidGameRequest(req.body)) {
             return res.status(400).json({ message: 'All parameters must be strings.' });
         }
