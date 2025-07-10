@@ -1,6 +1,6 @@
 import {Router} from 'express'
 import {simulateGame} from "./controllers/generator";
-import {getSeasonBySport} from "./controllers/teams";
+import {getSeasonBySport, getTeamsBySeason} from "./controllers/teams";
 
 
 
@@ -10,4 +10,5 @@ router.get('/home', (req, res)=> {
 });
 router.post('/generate', simulateGame)
 router.get('/seasons/:sport', getSeasonBySport)
+router.get('/seasons/:sport/:season', getTeamsBySeason)
 export default router
