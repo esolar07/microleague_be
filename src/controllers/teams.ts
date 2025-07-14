@@ -43,15 +43,16 @@ export const getSeasonBySport = async (req: Request, res: Response): Promise<voi
 
 async function getTeamDetails(sport: string, season: string, teamId: string): Promise<TeamDetailsResponse | null> {
     const teamDetailsEndpoint = `${process.env.TEAMS_DATA_ENDPOINT}/v2/sports/${sport}/leagues/nfl/seasons/${season}/teams/${teamId}?lang=en&region=us`;
-    const teamDetails = {};
+    let teamDetails = {};
     try {
         const response = await fetch(teamDetailsEndpoint);
         if (!response.ok) {
             throw new Error(`Error fetching individual team data! status: ${response.status}`);
         }
         const teamDetailsData = await response.json();
-        teamDetails[teamDetailsData.displayName] = {
+        teamDetails = {
             id: teamId,
+            name: teamDetailsData.displayName,
             image: teamDetailsData.logos[0]['href']
         }
         return teamDetails;
