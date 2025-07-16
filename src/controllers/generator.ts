@@ -5,43 +5,104 @@ require('dotenv').config();
 const openAICLient = new OpenAI();
 
 interface GameRequestBody{
-    teamOneYear: string;
-    teamOneName: string;
-    teamTwoYear: string;
-    teamTwoName: string;
+    homeTeamSeason: string;
+    homeTeamName: string;
+    awayTeamSeason: string;
+    awayTeamName: string;
 }
 
-function preparePrompt(teamOneYear: string, teamOneName:string, teamTwoYear: string, teamTwoName: string) {
-    return `what would happen if ${teamOneYear} ${teamOneName } played the ${teamTwoYear} ${teamTwoName}`;
+function preparePrompt(homeTeamSeason: string, homeTeamName:string, awayTeamSeason: string, awayTeamName: string) {
+    return `Simulate an NFL Match: (away) ${awayTeamSeason} ${awayTeamName} at  (home) ${homeTeamSeason} ${homeTeamName }.Detailed, Era-Balanced Gridiron Showdown. 
+    Response must be returned in the following structured JSON format: {
+            "game_info": {
+                "title": String,
+                "subtitle": String,
+                "location": String,
+                "rules_adjustment": String
+            },
+            "teams": {
+                {home_team_name}: {
+                    "coach": String,
+                    "actual_season_record": String,
+                    "notable_players": Array ,
+                    "era_style": String
+                },
+                {away_team_name}: {
+                    "coach": String,
+                    "actual_season_record": String,
+                    "notable_players": Array ,
+                    "era_style": String
+                }
+            },
+            "quarter_summaries": [
+                {
+                    "quarter": Int,
+                    "highlights": Array,
+                    "score": String
+                },
+            ],
+            "final_score": String,
+            "game_statistics": {
+                {home_team_name}: {
+                    "team_name": String
+                    "total_yards": Int,
+                    "passing_yards": Int,
+                    "rushing_yards": Int,
+                    "turnovers": Int,
+                    "sacks_allowed": Int,
+                    "time_of_possession": String
+                },
+                {away_team_name}: {
+                    "team_name": String
+                    "total_yards": Int,
+                    "passing_yards": Int,
+                    "rushing_yards": Int,
+                    "turnovers": Int,
+                    "sacks_allowed": Int,
+                    "time_of_possession": String
+                },
+            },
+            "era_impact_notes":Array,
+            "MVP": {
+                "name": String,
+                "stats": String,
+                "summary": String           
+            }
+        }`;
 }
 
-async function generateGame(teamOneYear: string, teamOneName:string, teamTwoYear: string, teamTwoName: string) {
+async function generateGame(homeTeamSeason: string, homeTeamName:string, awayTeamSeason: string, awayTeamName: string) {
     const response = await openAICLient.chat.completions.create({
-        model: "gpt-4.0", // or your correct model key
-        messages: [{ role: "user", content: preparePrompt(teamOneYear, teamOneName, teamTwoYear, teamTwoName) }],
+        model: "gpt-4.1",
+        messages: [{ role: "user", content: preparePrompt(homeTeamSeason, homeTeamName, awayTeamSeason, awayTeamName) }],
+        response_format:{type: "json_object"}
     });
     return response.choices?.[0]?.message?.content || 'No response generated.';
 }
 
 function isValidGameRequest(body: any): body is GameRequestBody {
     return (
-        typeof body.teamOneYear === 'string' &&
-        typeof body.teamOneName === 'string' &&
-        typeof body.teamTwoYear === 'string' &&
-        typeof body.teamTwoName === 'string'
+        typeof body.homeTeamSeason === 'string' &&
+        typeof body.homeTeamName === 'string' &&
+        typeof body.awayTeamSeason === 'string' &&
+        typeof body.awayTeamName === 'string'
     );
 }
 
 export const simulateGame = async (req: Request<{}, {}, GameRequestBody>, res: Response) => {
     try {
-        const {teamOneYear, teamOneName, teamTwoYear, teamTwoName} = req.body;
+        const {homeTeamSeason, homeTeamName, awayTeamSeason, awayTeamName} = req.body;
         if (!isValidGameRequest(req.body)) {
             return res.status(400).json({ message: 'All parameters must be strings.' });
         }
-        const gameSimulation = await generateGame(teamOneYear, teamOneName, teamTwoYear, teamTwoName);
+        const gameSimulation = await generateGame(homeTeamSeason, homeTeamName, awayTeamSeason, awayTeamName);
+        console.log(gameSimulation)
+        // const cleanedGameSimulation = gameSimulation
+        //     .replace(/^```json\n/, '')  // Remove starting ```json
+        //     .replace(/\n```$/, '');     // Remove trailing ```
         await res.status(200).json({
             message: 'Parameters received successfully!',
-            data:  gameSimulation,
+            data:  JSON.parse(gameSimulation),
         });
     } catch (e) {
         console.error("Simulation error:", e);
