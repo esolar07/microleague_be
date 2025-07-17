@@ -13,15 +13,27 @@ interface TeamDetailsApiResponse {
     logos: Array<{ href: string }>;
 }
 
+type Sport = 'football' | 'basketball' | 'baseball';
+type League = 'nfl' | 'nba' | 'mlb';
+
 type TeamDetailsResponse = Record<string, { id: string; image: string | null }>;
+const getLeagueType = (sport: Sport):League => {
+    const leagueMap: Record<Sport, League> = {
+        football: 'nfl',
+        basketball: 'nba',
+        baseball: 'mlb',
+    };
+    return leagueMap[sport];
+}
 
 export const getSeasonBySport = async (req: Request, res: Response): Promise<void> => {
     let allSeasonsList: string[] = [];
-    let pageIndex:number = 1;
+    let pageIndex: number = 1;
     let hasMorePages: boolean = true;
+    let league: League = getLeagueType(req.params.sport as Sport);
     try {
         while (hasMorePages) {
-            const seasonsEndpoint: string = `${process.env.TEAMS_DATA_ENDPOINT}/v2/sports/${req.params.sport}/leagues/nfl/seasons?page=${pageIndex}`;
+            const seasonsEndpoint: string = `${process.env.TEAMS_DATA_ENDPOINT}/v2/sports/${req.params.sport}/leagues/${league}/seasons?page=${pageIndex}`;
             const seasonsResponse = await fetch(seasonsEndpoint);
             if (!seasonsResponse.ok) {
                 throw new Error(`HTTP error! status: ${seasonsResponse.status}`);
@@ -48,7 +60,8 @@ export const getSeasonBySport = async (req: Request, res: Response): Promise<voi
 }
 
 async function getTeamDetails(sport: string, season: string, teamId: string): Promise<TeamDetailsResponse | null> {
-    const teamDetailsEndpoint = `${process.env.TEAMS_DATA_ENDPOINT}/v2/sports/${sport}/leagues/nfl/seasons/${season}/teams/${teamId}?lang=en&region=us`;
+    let league: League = getLeagueType(sport as Sport);
+    const teamDetailsEndpoint = `${process.env.TEAMS_DATA_ENDPOINT}/v2/sports/${sport}/leagues/${league}/seasons/${season}/teams/${teamId}?lang=en&region=us`;
     let teamDetails = {};
     try {
         const response = await fetch(teamDetailsEndpoint);
@@ -69,25 +82,33 @@ async function getTeamDetails(sport: string, season: string, teamId: string): Pr
 }
 
 export const getTeamsBySeason = async (req: Request, res: Response) => {
+    let pageIndex:number = 1;
+    let hasMorePages: boolean = true;
     const { sport, season } = req.params;
-    let seasonTeamsEndpoint = `${process.env.TEAMS_DATA_ENDPOINT}/v2/sports/${sport}/leagues/nfl/seasons/${season}/teams`;
-    let teamList: TeamDetailsResponse[] = [];
+    let teamsList: TeamDetailsResponse[] = [];
+    let league: League = getLeagueType(req.params.sport as Sport);
     try {
-        const response = await fetch(seasonTeamsEndpoint);
-        if (!response.ok) {
-            throw new Error(`Error fetching teams by season data! status: ${response.status}`);
-        }
-        const teamListData: { items: TeamListItem[] } = await response.json();
-        for(const teamListDataItem of teamListData.items){
-            let teamIdMatch = teamListDataItem.$ref.match(/teams\/(\d+)/);
-            if (teamIdMatch && teamIdMatch[1]) {
-                let teamDetails = await getTeamDetails(sport, season, teamIdMatch[1])
-                teamList.push(teamDetails);
+        while (hasMorePages) {
+            let seasonTeamsEndpoint = `${process.env.TEAMS_DATA_ENDPOINT}/v2/sports/${sport}/leagues/${league}/seasons/${season}/teams?page=${pageIndex}`;
+
+            const teamsResponse = await fetch(seasonTeamsEndpoint);
+            if (!teamsResponse.ok) {
+                throw new Error(`Error fetching teams by season data! status: ${teamsResponse.status}`);
             }
+            const teams = await teamsResponse.json();
+            for (const team of teams.items) {
+                let teamIdMatch = team.$ref.match(/teams\/(\d+)/);
+                if (teamIdMatch && teamIdMatch[1]) {
+                    let teamDetails = await getTeamDetails(sport, season, teamIdMatch[1])
+                    teamsList.push(teamDetails);
+                }
+            }
+            hasMorePages = pageIndex < teams.pageCount;
+            pageIndex += 1;
         }
         res.status(200).json({
             message: 'All season returned',
-            data:  teamList,
+            data:  teamsList,
         });
     } catch (e) {
         console.error('Error fetching teams by season data:', e);

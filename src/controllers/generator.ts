@@ -15,7 +15,7 @@ function preparePrompt(homeTeamSeason: string, homeTeamName:string, awayTeamSeas
     return `Simulate an NFL Match: (away) ${awayTeamSeason} ${awayTeamName} at  (home) ${homeTeamSeason} ${homeTeamName }.Detailed, Era-Balanced Gridiron Showdown. 
     Response must be returned in the following structured JSON format: {
             "game_info": {
-                "title": String,
+                "title": {just teams names and year},
                 "subtitle": String,
                 "location": String,
                 "rules_adjustment": String
