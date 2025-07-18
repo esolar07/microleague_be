@@ -5,76 +5,135 @@ require('dotenv').config();
 const openAICLient = new OpenAI();
 
 interface GameRequestBody{
+    sport:string;
     homeTeamSeason: string;
     homeTeamName: string;
     awayTeamSeason: string;
     awayTeamName: string;
 }
 
-function preparePrompt(homeTeamSeason: string, homeTeamName:string, awayTeamSeason: string, awayTeamName: string) {
-    return `Simulate an NFL Match: (away) ${awayTeamSeason} ${awayTeamName} at  (home) ${homeTeamSeason} ${homeTeamName }.Detailed, Era-Balanced Gridiron Showdown. 
-    Response must be returned in the following structured JSON format: {
-            "game_info": {
-                "title": {just teams names and year},
-                "subtitle": String,
-                "location": String,
-                "rules_adjustment": String
-            },
-            "teams": {
-                {home_team_name}: {
-                    "coach": String,
-                    "actual_season_record": String,
-                    "notable_players": Array ,
-                    "era_style": String
-                },
-                {away_team_name}: {
-                    "coach": String,
-                    "actual_season_record": String,
-                    "notable_players": Array ,
-                    "era_style": String
-                }
-            },
-            "quarter_summaries": [
-                {
-                    "quarter": Int,
-                    "highlights": Array,
-                    "score": String
-                },
-            ],
-            "final_score": String,
-            "game_statistics": {
-                {home_team_name}: {
-                    "team_name": String
-                    "total_yards": Int,
-                    "passing_yards": Int,
-                    "rushing_yards": Int,
-                    "turnovers": Int,
-                    "sacks_allowed": Int,
-                    "time_of_possession": String
-                },
-                {away_team_name}: {
-                    "team_name": String
-                    "total_yards": Int,
-                    "passing_yards": Int,
-                    "rushing_yards": Int,
-                    "turnovers": Int,
-                    "sacks_allowed": Int,
-                    "time_of_possession": String
-                },
-            },
-            "era_impact_notes":Array,
-            "MVP": {
-                "name": String,
-                "stats": String,
-                "summary": String           
-            }
-        }`;
+export const sportConfigs = {
+    football: {
+        league: 'NFL',
+        titlePrefix: 'Simulate an NFL Match',
+        stats: [
+            'total_yards',
+            'passing_yards',
+            'rushing_yards',
+            'turnovers',
+            'sacks_allowed',
+            'time_of_possession'
+        ],
+        notesHint: 'Era impact notes should reflect passing rules, line play, clock mgmt.'
+    },
+    basketball: {
+        league: 'NBA',
+        titlePrefix: 'Simulate an NBA Matchup',
+        stats: [
+            'points',
+            'assists',
+            'rebounds',
+            'turnovers',
+            'field_goal_percentage',
+            'three_point_percentage'
+        ],
+        notesHint: 'Era notes should address pace, 3-point usage, hand-checking.'
+    },
+    baseball: {
+        league: 'MLB',
+        titlePrefix: 'Simulate an MLB Game',
+        stats: [
+            'hits',
+            'runs',
+            'home_runs',
+            'strikeouts',
+            'errors',
+            'innings_pitched'
+        ],
+        notesHint: 'Era impact should reflect pitching dominance, DH rule, ballpark size.'
+    }
+} as const;
+
+export type SportKey = keyof typeof sportConfigs;
+
+export function preparePrompt(
+    sport: string,
+    homeTeamSeason: string,
+    homeTeamName: string,
+    awayTeamSeason: string,
+    awayTeamName: string
+): string {
+    const periodLabel: string = sport === 'baseball' ? 'inning_summaries' : 'quarter_summaries';
+    const periodKey: string = sport === 'baseball' ? 'inning' : 'quarter';
+    const coachLabel: string = sport === 'baseball' ? 'manager' : 'coach';
+    const config = sportConfigs[sport];
+    console.log(config)
+    const statsSchema = config.stats.map((stat) => `\"${stat}\": [type]`).join(',\n');
+
+    return `
+${config.titlePrefix}: (away) ${awayTeamSeason} ${awayTeamName} at (home) ${homeTeamSeason} ${homeTeamName}.
+Use era-adjusted rules. ${config.notesHint}
+
+Return response as JSON:
+{
+  \"game_info\": {
+    \"sport\": \"${sport}\",
+    \"title\": \"String\",
+    \"subtitle\": \"String\",
+    \"location\": \"String\",
+    \"rules_adjustment\": \"String\"
+  },
+  \"teams\": {
+    \"${homeTeamName}\": {
+      \"${coachLabel}\": \"String\",
+      \"actual_season_record\": \"String\",
+      \"notable_players\": [\"String\"],
+      \"era_style\": \"String\"
+    },
+    \"${awayTeamName}\": {
+      \"${coachLabel}\": \"String\",
+      \"actual_season_record\": \"String\",
+      \"notable_players\": [\"String\"],
+      \"era_style\": \"String\"
+    }
+  },
+  \"${periodLabel}\": [
+    {
+      \"${periodKey}\": Number,
+      \"highlights\": [\"String\"],
+      \"score\": \"String\"
+    }
+  ],
+  \"final_score\": \"String\",
+  \"game_statistics\": {
+    \"${homeTeamName}\": {
+      \"team_name\": \"${homeTeamName}\",
+      ${statsSchema}
+    },
+    \"${awayTeamName}\": {
+      \"team_name\": \"${awayTeamName}\",
+      ${statsSchema}
+    }
+  },
+  \"era_impact_notes\": [\"String\"],
+  \"MVP\": {
+    \"name\": \"String\",
+    \"stats\": \"String\",
+    \"summary\": \"String\"
+  }
+}`;
 }
 
-async function generateGame(homeTeamSeason: string, homeTeamName:string, awayTeamSeason: string, awayTeamName: string) {
+async function generateGame(request: GameRequestBody) {
     const response = await openAICLient.chat.completions.create({
         model: "gpt-4.1",
-        messages: [{ role: "user", content: preparePrompt(homeTeamSeason, homeTeamName, awayTeamSeason, awayTeamName) }],
+        messages: [{ role: "user", content: preparePrompt(
+                request.sport,
+                request.homeTeamSeason,
+                request.homeTeamName,
+                request.awayTeamSeason,
+                request.awayTeamName
+            ) }],
         response_format:{type: "json_object"}
     });
     return response.choices?.[0]?.message?.content || 'No response generated.';
@@ -95,11 +154,7 @@ export const simulateGame = async (req: Request<{}, {}, GameRequestBody>, res: R
         if (!isValidGameRequest(req.body)) {
             return res.status(400).json({ message: 'All parameters must be strings.' });
         }
-        const gameSimulation = await generateGame(homeTeamSeason, homeTeamName, awayTeamSeason, awayTeamName);
-        console.log(gameSimulation)
-        // const cleanedGameSimulation = gameSimulation
-        //     .replace(/^```json\n/, '')  // Remove starting ```json
-        //     .replace(/\n```$/, '');     // Remove trailing ```
+        const gameSimulation = await generateGame(req.body);
         await res.status(200).json({
             message: 'Parameters received successfully!',
             data:  JSON.parse(gameSimulation),

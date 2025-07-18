@@ -118,4 +118,3 @@ export const getTeamsBySeason = async (req: Request, res: Response) => {
         });
     }
 }
-// export const getTeam = async (req: Request<{}, {}, GameRequestBody>, res: Response) => {}
