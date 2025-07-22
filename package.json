@@ -9,6 +9,9 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.ts"
   },
+  "prisma": {
+    "seed": "tsx seed.ts"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -21,7 +24,7 @@
     "express": "^5.1.0",
     "lucide-react": "^0.525.0",
     "morgan": "^1.10.0",
-    "openai": "^5.8.2",
+    "openai": "^5.10.1",
     "ts-node": "^10.9.2",
     "yup": "^1.6.1"
   },

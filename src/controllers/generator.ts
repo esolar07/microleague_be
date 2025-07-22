@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
 import OpenAI from 'openai';
+import {createMatchUp, storeMatchUpResults} from '../services/matchUpService';
 require('dotenv').config();
 
 const openAICLient = new OpenAI();
 
 interface GameRequestBody{
-    sport:string;
+    sport: string;
     homeTeamSeason: string;
     homeTeamName: string;
     awayTeamSeason: string;
@@ -125,6 +126,7 @@ Return response as JSON:
 }
 
 async function generateGame(request: GameRequestBody) {
+
     const response = await openAICLient.chat.completions.create({
         model: "gpt-4.1",
         messages: [{ role: "user", content: preparePrompt(
@@ -150,11 +152,22 @@ function isValidGameRequest(body: any): body is GameRequestBody {
 
 export const simulateGame = async (req: Request<{}, {}, GameRequestBody>, res: Response) => {
     try {
-        const {homeTeamSeason, homeTeamName, awayTeamSeason, awayTeamName} = req.body;
         if (!isValidGameRequest(req.body)) {
             return res.status(400).json({ message: 'All parameters must be strings.' });
         }
+        const {sport, homeTeamSeason, homeTeamName, awayTeamSeason, awayTeamName} = req.body;
+        const matchId: number = await createMatchUp(
+            sport,
+            homeTeamSeason,
+            homeTeamName,
+            awayTeamSeason,
+            awayTeamName
+        );
         const gameSimulation = await generateGame(req.body);
+        if (!gameSimulation) {
+            return res.status(500).json({ message: 'Failed to generate game simulation.' });
+        }
+        await storeMatchUpResults(matchId, gameSimulation);
         await res.status(200).json({
             message: 'Parameters received successfully!',
             data:  JSON.parse(gameSimulation),

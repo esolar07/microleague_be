@@ -13,6 +13,12 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+enum SportType {
+  BASKETBALL
+  BASEBALL
+  FOOTBALL
+}
+
 model Sports {
   id  Int @id @default(autoincrement())
   name  String
@@ -20,7 +26,7 @@ model Sports {
 }
 
 model MatchUp {
-  id  String  @id @default(cuid())
+  id  Int  @id @default(autoincrement())
   sportId Int
   sport Sports @relation(fields: [sportId], references: [id])
   homeTeamSeason String
@@ -33,8 +39,8 @@ model MatchUp {
 }
 
 model MatchUpResult {
-  id String @id @default(cuid())
-  matchUpId String
+  id Int @id @default(autoincrement())
+  matchUpId Int
   matchUp MatchUp @relation(fields: [matchUpId], references: [id])
   simulation Json 
   createdAt DateTime @default(now())
