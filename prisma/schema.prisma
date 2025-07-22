@@ -13,3 +13,30 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+model Sports {
+  id  Int @id @default(autoincrement())
+  name  String
+  MatchUp MatchUp[]
+}
+
+model MatchUp {
+  id  String  @id @default(cuid())
+  sportId Int
+  sport Sports @relation(fields: [sportId], references: [id])
+  homeTeamSeason String
+  homeTeamName String
+  awayTeamSeason String
+  awayTeamName String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  MatchUpResult MatchUpResult[]
+}
+
+model MatchUpResult {
+  id String @id @default(cuid())
+  matchUpId String
+  matchUp MatchUp @relation(fields: [matchUpId], references: [id])
+  simulation Json 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
