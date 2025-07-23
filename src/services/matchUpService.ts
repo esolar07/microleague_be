@@ -49,3 +49,15 @@ export const storeMatchUpResults = async (matchId: number, gameSimulation: any) 
         throw error;
     }
 }
+
+export const getMatchUpResults = async (matchId: number) => {
+    try {
+        const simulationResults = await prisma.matchUpResult.findFirst({
+            where: { matchUpId: matchId }
+        });
+        return simulationResults.simulation || null;
+    } catch (error) {
+        console.error('Error fetching match up results:', error);
+        throw error;
+    }
+};

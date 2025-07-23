@@ -56,8 +56,12 @@ export const sportConfigs = {
 } as const;
 
 export type SportKey = keyof typeof sportConfigs;
+ 
+export function prepareSimulationRecapArticlePrompt(matchUpResultId: number) {
+  
+} 
 
-export function preparePrompt(
+export function prepareSimulationPrompt(
     sport: string,
     homeTeamSeason: string,
     homeTeamName: string,
@@ -72,64 +76,64 @@ export function preparePrompt(
     const statsSchema = config.stats.map((stat) => `\"${stat}\": [type]`).join(',\n');
 
     return `
-${config.titlePrefix}: (away) ${awayTeamSeason} ${awayTeamName} at (home) ${homeTeamSeason} ${homeTeamName}.
-Use era-adjusted rules. ${config.notesHint}
+      ${config.titlePrefix}: (away) ${awayTeamSeason} ${awayTeamName} at (home) ${homeTeamSeason} ${homeTeamName}.
+      Use era-adjusted rules. ${config.notesHint}
 
-Return response as JSON:
-{
-  \"game_info\": {
-    \"sport\": \"${sport}\",
-    \"title\": \"String\",
-    \"subtitle\": \"String\",
-    \"location\": \"String\",
-    \"rules_adjustment\": \"String\"
-  },
-  \"teams\": {
-    \"${homeTeamName}\": {
-      \"${coachLabel}\": \"String\",
-      \"actual_season_record\": \"String\",
-      \"notable_players\": [\"String\"],
-      \"era_style\": \"String\"
-    },
-    \"${awayTeamName}\": {
-      \"${coachLabel}\": \"String\",
-      \"actual_season_record\": \"String\",
-      \"notable_players\": [\"String\"],
-      \"era_style\": \"String\"
-    }
-  },
-  \"${periodLabel}\": [
-    {
-      \"${periodKey}\": Number,
-      \"highlights\": [\"String\"],
-      \"score\": \"String\"
-    }
-  ],
-  \"final_score\": \"String\",
-  \"game_statistics\": {
-    \"${homeTeamName}\": {
-      \"team_name\": \"${homeTeamName}\",
-      ${statsSchema}
-    },
-    \"${awayTeamName}\": {
-      \"team_name\": \"${awayTeamName}\",
-      ${statsSchema}
-    }
-  },
-  \"era_impact_notes\": [\"String\"],
-  \"MVP\": {
-    \"name\": \"String\",
-    \"stats\": \"String\",
-    \"summary\": \"String\"
-  }
-}`;
+      Return response as JSON:
+      {
+        \"game_info\": {
+          \"sport\": \"${sport}\",
+          \"title\": \"String\",
+          \"subtitle\": \"String\",
+          \"location\": \"String\",
+          \"rules_adjustment\": \"String\"
+        },
+        \"teams\": {
+          \"${homeTeamName}\": {
+            \"${coachLabel}\": \"String\",
+            \"actual_season_record\": \"String\",
+            \"notable_players\": [\"String\"],
+            \"era_style\": \"String\"
+          },
+          \"${awayTeamName}\": {
+            \"${coachLabel}\": \"String\",
+            \"actual_season_record\": \"String\",
+            \"notable_players\": [\"String\"],
+            \"era_style\": \"String\"
+          }
+        },
+        \"${periodLabel}\": [
+          {
+            \"${periodKey}\": Number,
+            \"highlights\": [\"String\"],
+            \"score\": \"String\"
+          }
+        ],
+        \"final_score\": \"String\",
+        \"game_statistics\": {
+          \"${homeTeamName}\": {
+            \"team_name\": \"${homeTeamName}\",
+            ${statsSchema}
+          },
+          \"${awayTeamName}\": {
+            \"team_name\": \"${awayTeamName}\",
+            ${statsSchema}
+          }
+        },
+        \"era_impact_notes\": [\"String\"],
+        \"MVP\": {
+          \"name\": \"String\",
+          \"stats\": \"String\",
+          \"summary\": \"String\"
+        }
+      }`;
 }
 
 async function generateGame(request: GameRequestBody) {
 
     const response = await openAICLient.chat.completions.create({
         model: "gpt-4.1",
-        messages: [{ role: "user", content: preparePrompt(
+        messages: [{ role: "user", content: prepareSimulationPrompt(
                 request.sport,
                 request.homeTeamSeason,
                 request.homeTeamName,
@@ -179,4 +183,27 @@ export const simulateGame = async (req: Request<{}, {}, GameRequestBody>, res: R
             error: e instanceof Error ? e.message : 'Unknown error',
         });
     }
+}
+
+export const createSimulationRecapArticle = async (req: Request, res: Response) => {
+    // const matchUpResultId = parseInt(req.query.matchUpResultId as string, 10);
+    // if (isNaN(matchUpResultId)) {
+    //     return res.status(400).json({ message: 'Invalid matchUpResultId parameter.' });
+    // }
+    // try {
+    //     const articleContent = await prepareSimulationRecapArticlePrompt(matchUpResultId);
+    //     if (!articleContent) {
+    //         return res.status(500).json({ message: 'Failed to generate article content.' });
+    //     }
+    //     res.status(200).json({
+    //         message: 'Article generated successfully!',
+    //         data: articleContent,
+    //     });
+    // } catch (e) {
+    //     console.error("Article generation error:", e);
+    //     res.status(500).json({
+    //         message: 'Internal server error.',
+    //         error: e instanceof Error ? e.message : 'Unknown error',
+    //     });
+    // }
 }
