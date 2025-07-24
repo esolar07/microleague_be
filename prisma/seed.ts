@@ -1,8 +1,9 @@
 import { PrismaClient } from '../generated/prisma';
+import { Sport } from '../src/types/sports';
 
 const prisma = new PrismaClient();
 
-const sportTypes = ['football', 'basketball', 'baseball'];
+const sportTypes: Sport[] = ['football', 'basketball', 'baseball'];
 
 async function main() {
   for (const name of sportTypes) {

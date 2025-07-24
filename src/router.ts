@@ -11,6 +11,6 @@ router.get('/home', (req, res)=> {
 router.post('/generate', simulateGame)
 router.get('/seasons/:sport', getSeasonBySport)
 router.get('/seasons/:sport/:season', getTeamsBySeason)
-router.get('/generate/articles', createSimulationRecapArticle)
+router.get('/generate/articles/:matchUpResultId', createSimulationRecapArticle)
 
 export default router

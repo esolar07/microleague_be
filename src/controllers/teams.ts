@@ -1,22 +1,8 @@
 import { Request, Response } from 'express';
+import { SeasonItem, TeamListItem, TeamDetailsApiResponse, TeamDetailsResponse } from '../types/teams';
+import { Sport, League } from '../types/sports';
+require('dotenv').config();
 
-interface SeasonItem {
-    $ref: string;
-}
-
-interface TeamListItem {
-    $ref: string;
-}
-
-interface TeamDetailsApiResponse {
-    displayName: string;
-    logos: Array<{ href: string }>;
-}
-
-type Sport = 'football' | 'basketball' | 'baseball';
-type League = 'nfl' | 'nba' | 'mlb';
-
-type TeamDetailsResponse = Record<string, { id: string; image: string | null }>;
 const getLeagueType = (sport: Sport):League => {
     const leagueMap: Record<Sport, League> = {
         football: 'nfl',
