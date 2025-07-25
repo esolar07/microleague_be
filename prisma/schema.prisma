@@ -21,7 +21,7 @@ enum SportType {
 
 model Sports {
   id  Int @id @default(autoincrement())
-  name  String
+  name  SportType @unique
   MatchUp MatchUp[]
 }
 
@@ -36,13 +36,24 @@ model MatchUp {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   MatchUpResult MatchUpResult[]
+  @@index([sportId])
 }
 
 model MatchUpResult {
   id Int @id @default(autoincrement())
   matchUpId Int
-  matchUp MatchUp @relation(fields: [matchUpId], references: [id])
+  matchUp MatchUp @relation(fields: [matchUpId], references: [id], onDelete: Cascade)
   simulation Json 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  matchupResultArticle MatchupResultArticle[]
+}
+
+model MatchupResultArticle {
+  id Int @id @default(autoincrement())
+  matchupResultId Int
+  matchUpResult MatchUpResult @relation(fields: [matchupResultId], references: [id], onDelete: Cascade)
+  matchupArticle Json 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

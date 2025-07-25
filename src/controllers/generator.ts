@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import OpenAI from 'openai';
 import {createMatchUp, storeMatchUpResults} from '../services/matchUpService';
+import { storeMatchupResultArticle } from '../services/matchupArticles'
 import { prepareSimulationPrompt, prepareSimulationRecapArticlePrompt } from '../prompts/simulationPrompts';
 import { GameRequestBody } from '../types/games';
 require('dotenv').config();
@@ -71,6 +72,7 @@ export const createSimulationRecapArticle = async (req: Request, res: Response) 
             messages: [{ role: "user", content: articleContentPrompt }],
             response_format:{type: "json_object"}
         });
+        await storeMatchupResultArticle(Number(req.params.matchUpResultId), openAIArticle.choices?.[0]?.message?.content);
         return await res.status(200).json({
             message: 'Parameters received successfully!',
             data:  openAIArticle.choices?.[0]?.message?.content ,
