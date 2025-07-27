@@ -73,9 +73,10 @@ export const createSimulationRecapArticle = async (req: Request, res: Response) 
             response_format:{type: "json_object"}
         });
         await storeMatchupResultArticle(Number(req.params.matchUpResultId), openAIArticle.choices?.[0]?.message?.content);
+        console.log("Article generated successfully:", openAIArticle.choices?.[0]?.message?.content);
         return await res.status(200).json({
             message: 'Parameters received successfully!',
-            data:  openAIArticle.choices?.[0]?.message?.content ,
+            data:  JSON.parse(openAIArticle.choices?.[0]?.message?.content),
         });
     } catch (e) {
         console.error("Article generation error:", e);
