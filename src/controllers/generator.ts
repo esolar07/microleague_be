@@ -50,9 +50,13 @@ export const simulateGame = async (req: Request<{}, {}, GameRequestBody>, res: R
         if (!gameSimulation) {
             return res.status(500).json({ message: 'Failed to generate game simulation.' });
         }
-        await storeMatchUpResults(matchId, gameSimulation);
+        const matchupResults = await storeMatchUpResults(matchId, gameSimulation);
+        // if (!matchupResults) {
+        //     return res.status(500).json({ message: 'Failed to store match-up results.' });
+        // }
         await res.status(200).json({
             message: 'Parameters received successfully!',
+            id: matchupResults.matchUpId,
             data:  JSON.parse(gameSimulation),
         });
     } catch (e) {
@@ -72,7 +76,7 @@ export const createSimulationRecapArticle = async (req: Request, res: Response) 
             messages: [{ role: "user", content: articleContentPrompt }],
             response_format:{type: "json_object"}
         });
-        await storeMatchupResultArticle(Number(req.params.matchUpResultId), openAIArticle.choices?.[0]?.message?.content);
+        const articleId = await storeMatchupResultArticle(Number(req.params.matchUpResultId), openAIArticle.choices?.[0]?.message?.content);
         console.log("Article generated successfully:", openAIArticle.choices?.[0]?.message?.content);
         return await res.status(200).json({
             message: 'Parameters received successfully!',
