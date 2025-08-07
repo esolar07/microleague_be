@@ -1,13 +1,21 @@
-import { PrismaClient } from '../../generated/prisma';
+import { PrismaClient, $Enums } from '../../generated/prisma';
+import {SportType}  from "../../generated/prisma";
 
 const prisma = new PrismaClient();
 
 export const getSportIdByName = async (name: string) => {
+    const sportType = name.toUpperCase();
+    if (!Object.values($Enums.SportType).includes(sportType as $Enums.SportType)) {
+        throw new Error(`Invalid sport type: ${sportType}`);
+    }
     const sport = await prisma.sports.findFirst({
-        where: { name }
+        where: {
+            name: sportType as $Enums.SportType
+        }
     });
     return sport?.id ?? null;
 };
+
 export const createMatchUp = async (
     sport: string, 
     homeTeamSeason: string, 
@@ -16,6 +24,7 @@ export const createMatchUp = async (
     awayTeamName: string
 ) => {
     try {
+        console.log(sport)
         const sportId: number = await getSportIdByName(sport);
         if (!sportId) {
             throw new Error(`Sport with name ${sport} not found.`);

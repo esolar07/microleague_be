@@ -21,7 +21,7 @@ enum SportType {
 
 model Sports {
   id  Int @id @default(autoincrement())
-  name  SportType @unique
+  name  String @unique
   MatchUp MatchUp[]
 }
 

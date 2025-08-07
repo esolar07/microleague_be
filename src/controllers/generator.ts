@@ -4,6 +4,7 @@ import {createMatchUp, storeMatchUpResults} from '../services/matchUpService';
 import { storeMatchupResultArticle } from '../services/matchupArticles'
 import { prepareSimulationPrompt, prepareSimulationRecapArticlePrompt } from '../prompts/simulationPrompts';
 import { GameRequestBody } from '../types/games';
+
 require('dotenv').config();
 
 const openAICLient = new OpenAI();
