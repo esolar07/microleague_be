@@ -1,10 +1,7 @@
-import { PrismaClient, SportType } from '../../generated/prisma';
+import { PrismaClient, SportType } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-/**
- * Get sport ID by enum name (case-insensitive).
- */
 export const getSportIdByName = async (name: string) => {
   const sportType = name.toUpperCase() as SportType;
 
