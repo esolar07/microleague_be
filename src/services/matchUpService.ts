@@ -1,20 +1,24 @@
-import { PrismaClient, $Enums } from '../../generated/prisma';
-import {SportType}  from "../../generated/prisma";
+import { PrismaClient, SportType } from '../../generated/prisma';
 
 const prisma = new PrismaClient();
 
+/**
+ * Get sport ID by enum name (case-insensitive).
+ */
 export const getSportIdByName = async (name: string) => {
-    const sportType = name.toUpperCase();
-    if (!Object.values($Enums.SportType).includes(sportType as $Enums.SportType)) {
-        throw new Error(`Invalid sport type: ${sportType}`);
-    }
-    const sport = await prisma.sports.findFirst({
-        where: {
-            name: sportType as $Enums.SportType
-        }
-    });
-    return sport?.id ?? null;
+  const sportType = name.toUpperCase() as SportType;
+
+  if (!Object.values(SportType).includes(sportType)) {
+    throw new Error(`Invalid sport type: ${sportType}`);
+  }
+
+  const sport = await prisma.sports.findFirst({
+    where: { name: sportType }
+  });
+
+  return sport?.id ?? null;
 };
+
 
 export const createMatchUp = async (
     sport: string, 

@@ -13,6 +13,7 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 enum SportType {
   BASKETBALL
   BASEBALL
@@ -21,7 +22,7 @@ enum SportType {
 
 model Sports {
   id  Int @id @default(autoincrement())
-  name  String @unique
+  name  SportType @unique
   MatchUp MatchUp[]
 }
 
