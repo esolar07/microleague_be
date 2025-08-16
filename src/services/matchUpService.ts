@@ -1,13 +1,13 @@
-import { PrismaClient, SportType } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 export const getSportIdByName = async (name: string) => {
-  const sportType = name.toUpperCase() as SportType;
+  const sportType = name.toUpperCase();
 
-  if (!Object.values(SportType).includes(sportType)) {
-    throw new Error(`Invalid sport type: ${sportType}`);
-  }
+//   if (!Object.values(SportType).includes(sportType)) {
+//     throw new Error(`Invalid sport type: ${sportType}`);
+//   }
 
   const sport = await prisma.sports.findFirst({
     where: { name: sportType }
