@@ -24,7 +24,6 @@ export const createMatchUp = async (
     awayTeamName: string
 ) => {
     try {
-        console.log(sport)
         const sportId: number = await getSportIdByName(sport);
         if (!sportId) {
             throw new Error(`Sport with name ${sport} not found.`);
