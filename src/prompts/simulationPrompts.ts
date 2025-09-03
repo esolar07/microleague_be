@@ -37,6 +37,7 @@ export const sportConfigs = {
             'strikeouts',
             'errors',
             'innings_pitched'
+            
         ],
         notesHint: 'Era impact should reflect pitching dominance, DH rule, ballpark size.'
     }
@@ -124,6 +125,42 @@ export function prepareSimulationPrompt(
           \"location\": \"String\",
           \"rules_adjustment\": \"String\"
         },
+        \"home_team\": { 
+          \"name\": \"${homeTeamName}\",
+          \"season\": \"${homeTeamSeason}\",
+          \"${coachLabel}\": \"String\",
+          \"actual_season_record\": \"String\",
+          \"notable_players\": [\"String\"],
+          \"era_style\": \"String\",
+          \"game_statistics\": {
+            ${statsSchema}
+          },
+          "box_score": [
+            {
+              "name": "String",
+              "stats": "String"
+            }
+          ],
+          \"injuries\": \"String\",
+        },
+        \"away_team\": { 
+         \"name\": \"${homeTeamName}\",
+          \"season\": \"${awayTeamSeason}\",
+          \"${coachLabel}\": \"String\",
+          \"actual_season_record\": \"String\",
+          \"notable_players\": [\"String\"],
+          \"era_style\": \"String\",
+          \"game_statistics\": {
+            ${statsSchema}
+          },
+          "box_score": [
+            {
+              "name": "String",
+              "stats": "String"
+            }
+          ],
+          \"injuries\": \"String\",
+        },
         \"teams\": {
           \"${homeTeamName}\": {
             \"${coachLabel}\": \"String\",
@@ -161,6 +198,21 @@ export function prepareSimulationPrompt(
           \"name\": \"String\",
           \"stats\": \"String\",
           \"summary\": \"String\"
-        }
+        },
+        "box_score": {
+          "${homeTeamName}": [
+            {
+              "name": "String",
+              "stats": "String"
+            }
+          ],
+          "${awayTeamName}": [
+            {
+              "name": "String",
+              "stats": "String"
+            }
+          ]
+        },
+        \"data_source_names\": \"String\"
       }`;
 }
