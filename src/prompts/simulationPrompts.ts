@@ -5,6 +5,7 @@ export const sportConfigs = {
         league: 'NFL',
         titlePrefix: 'Simulate an NFL Match',
         stats: [
+            'final_score',
             'total_yards',
             'passing_yards',
             'rushing_yards',
@@ -18,6 +19,7 @@ export const sportConfigs = {
         league: 'NBA',
         titlePrefix: 'Simulate an NBA Matchup',
         stats: [
+            'final_score',
             'points',
             'assists',
             'rebounds',
@@ -31,6 +33,7 @@ export const sportConfigs = {
         league: 'MLB',
         titlePrefix: 'Simulate an MLB Game',
         stats: [
+            'final_score',
             'hits',
             'runs',
             'home_runs',
@@ -132,6 +135,7 @@ export function prepareSimulationPrompt(
           \"actual_season_record\": \"String\",
           \"notable_players\": [\"String\"],
           \"era_style\": \"String\",
+          \"finalscore\": \"String\",
           \"game_statistics\": {
             ${statsSchema}
           },
@@ -150,6 +154,7 @@ export function prepareSimulationPrompt(
           \"actual_season_record\": \"String\",
           \"notable_players\": [\"String\"],
           \"era_style\": \"String\",
+          \"finalscore\": \"String\",
           \"game_statistics\": {
             ${statsSchema}
           },
