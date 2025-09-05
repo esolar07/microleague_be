@@ -17,6 +17,10 @@ export const getSeasonBySport = async (req: Request, res: Response): Promise<voi
     let pageIndex: number = 1;
     let hasMorePages: boolean = true;
     let league: League = getLeagueType(req.params.sport as Sport);
+    const excludedFootballYears: string[] = ["2025", "2026"]; 
+    const excludedBasketballYears: string[] = ["2026"]; 
+    const excludedBaseballYears: string[] = ["2026"]; 
+
     try {
         while (hasMorePages) {
             const seasonsEndpoint: string = `${process.env.TEAMS_DATA_ENDPOINT}/v2/sports/${req.params.sport}/leagues/${league}/seasons?page=${pageIndex}`;
@@ -31,6 +35,15 @@ export const getSeasonBySport = async (req: Request, res: Response): Promise<voi
             });
             hasMorePages = pageIndex < seasons.pageCount;
             pageIndex += 1;
+        }
+        if ( req.params.sport === 'football') {
+            allSeasonsList = allSeasonsList.filter(year => !excludedFootballYears.includes(year));
+        }
+        if ( req.params.sport === 'basketball') {
+            allSeasonsList = allSeasonsList.filter(year => !excludedBasketballYears.includes(year));
+        }
+        if ( req.params.sport === 'baseball') {
+            allSeasonsList = allSeasonsList.filter(year => !excludedBaseballYears.includes(year));
         }
         res.status(200).json({
             message: 'All season returned',
