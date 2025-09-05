@@ -154,7 +154,7 @@ export function prepareSimulationPrompt(
           \"actual_season_record\": \"String\",
           \"notable_players\": [\"String\"],
           \"era_style\": \"String\",
-          \"finalscore\": \"String\",
+          \"final_score\": \"String\",
           \"game_statistics\": {
             ${statsSchema}
           },
